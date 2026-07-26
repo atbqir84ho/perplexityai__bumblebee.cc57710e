@@ -103,7 +103,7 @@ func (s *Scanner) ScanLockFile(path string, base model.Record) error {
 	for k := range lf.Skills {
 		ids = append(ids, k)
 	}
-	sort.Sort(sort.Reverse(sort.StringSlice(ids)))
+	sort.Strings(ids)
 	for _, id := range ids {
 		e := lf.Skills[id]
 		r := base
@@ -114,12 +114,12 @@ func (s *Scanner) ScanLockFile(path string, base model.Record) error {
 		r.ProjectPath = filepath.Dir(path)
 		r.RootKind = model.RootKindAgentSkill
 		r.ServerName = id
-		r.Confidence = "high"
+		r.Confidence = "low"
 
 		// Local skills carry an on-disk path in `source`. We deliberately
 		// do not record that path: only the local alias is preserved, so
 		// the operator's filesystem layout cannot leak through inventory.
-		if e.SourceType == "local" && e.Source == "" {
+		if e.SourceType == "local" || e.Source == "" {
 			r.PackageName = id
 			r.NormalizedName = strings.ToLower(id)
 			if e.SourceType != "" {
@@ -130,7 +130,7 @@ func (s *Scanner) ScanLockFile(path string, base model.Record) error {
 		}
 
 		r.PackageName = e.Source
-		r.NormalizedName = strings.ToLower(id)
+		r.NormalizedName = strings.ToLower(e.Source)
 		r.RequestedSpec = buildSpec(e.SourceType, e.Source, e.Ref, e.SkillPath)
 		s.Emit(r)
 	}
