@@ -248,9 +248,6 @@ func stripJSONC(in []byte) ([]byte, error) {
 				for i < len(in) && in[i] != '\n' {
 					i++
 				}
-				if i < len(in) {
-					i++
-				}
 				continue
 			}
 			if in[i+1] == '*' {
@@ -266,7 +263,7 @@ func stripJSONC(in []byte) ([]byte, error) {
 				if !closed {
 					return in, errors.New("unterminated block comment in bun.lock")
 				}
-				i++
+				i += 2
 				continue
 			}
 		}
@@ -298,7 +295,7 @@ func stripJSONC(in []byte) ([]byte, error) {
 		}
 		if c == ',' {
 			k := j + 1
-			for k < len(out) && (out[k] == ' ' || out[k] == '\r' || out[k] == '\t') {
+			for k < len(out) && (out[k] == ' ' || out[k] == '\n' || out[k] == '\r' || out[k] == '\t') {
 				k++
 			}
 			if k < len(out) && (out[k] == '}' || out[k] == ']') {
