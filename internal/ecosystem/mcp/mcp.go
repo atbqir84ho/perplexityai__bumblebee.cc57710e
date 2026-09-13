@@ -425,7 +425,7 @@ func inferPackageFromArgs(cmd string, args []string) (spec, launcher string) {
 		if spec := scanExplicitPackage(args, nil); spec != "" {
 			return spec, ""
 		}
-		return firstNonFlag(args, nil, nil), ""
+		return firstNonFlag(args, nil, npmValueTakingFlags), ""
 	case "pnpm", "yarn", "bun", "npm":
 		// These wrappers take a subcommand (dlx, exec, x, run) before the
 		// package. Skip the subcommand so we return the actual package
@@ -470,7 +470,7 @@ func inferPackageFromArgs(cmd string, args []string) (spec, launcher string) {
 				return args[i+1], "uv"
 			}
 		}
-		if hasTool {
+		if !hasTool {
 			return "", "uv"
 		}
 		return firstNonFlag(args, map[string]bool{
@@ -484,7 +484,7 @@ func inferPackageFromArgs(cmd string, args []string) (spec, launcher string) {
 				return args[i+1], "pipx"
 			}
 		}
-		return firstNonFlag(args, nil, nil), "pipx"
+		return firstNonFlag(args, map[string]bool{"run": true}, nil), "pipx"
 	case "docker", "podman":
 		// docker run [opts] <image> [cmd...]. Walk args: skip "run" and any
 		// flags (with or without `=`). The first positional after that is
@@ -511,7 +511,7 @@ func inferPackageFromArgs(cmd string, args []string) (spec, launcher string) {
 				// flags before the image. Treat that as already started.
 				started = true
 			}
-			if strings.HasPrefix(a, "--") {
+			if strings.HasPrefix(a, "-") {
 				// Skip "--flag=value" form entirely.
 				if strings.Contains(a, "=") {
 					continue
@@ -527,7 +527,7 @@ func inferPackageFromArgs(cmd string, args []string) (spec, launcher string) {
 	case "python", "python3":
 		for i, a := range args {
 			if a == "-m" && i+1 < len(args) {
-				return args[i+1], ""
+				return "python:" + args[i+1], ""
 			}
 		}
 	}
