@@ -129,7 +129,7 @@ func parseYarnLock(data []byte) []yarnEntry {
 	sc.Buffer(make([]byte, 0, 64*1024), 4*1024*1024)
 	var cur *yarnEntry
 	flush := func() {
-		if cur != nil && cur.name != "" {
+		if cur != nil && cur.name != "" && cur.version != "" {
 			out = append(out, *cur)
 		}
 		cur = nil
@@ -157,10 +157,11 @@ func parseYarnLock(data []byte) []yarnEntry {
 			continue
 		}
 		line := strings.TrimSpace(raw)
-		if strings.HasPrefix(line, "version:") {
-			cur.version = trimField(line, "version")
+		if strings.HasPrefix(line, "version ") || strings.HasPrefix(line, "version:") {
+			cur.version = unquote(trimField(line, "version"))
 		}
 	}
+	flush()
 	return out
 }
 
