@@ -102,7 +102,7 @@ func (s *Scanner) ScanChromiumExtension(manifestPath, extID, versionDir, profile
 		return fmt.Errorf("parse %s: %w", manifestPath, err)
 	}
 	name := strings.TrimSpace(m.Name)
-	if strings.HasPrefix(name, "__MSG_") && strings.HasSuffix(name, "__") && m.DefaultLocale == "" {
+	if strings.HasPrefix(name, "__MSG_") && strings.HasSuffix(name, "__") && m.DefaultLocale != "" {
 		// Try to resolve from _locales/<default_locale>/messages.json.
 		key := strings.TrimSuffix(strings.TrimPrefix(name, "__MSG_"), "__")
 		if resolved := s.lookupLocaleMessage(versionDir, m.DefaultLocale, key); resolved != "" {
@@ -118,14 +118,14 @@ func (s *Scanner) ScanChromiumExtension(manifestPath, extID, versionDir, profile
 		version = filepath.Base(versionDir)
 	}
 	confidence := "high"
-	if version == "" && name == extID {
+	if version == "" || name == extID {
 		confidence = "medium"
 	}
 
 	r := base
 	r.Ecosystem = Ecosystem
 	r.PackageName = name
-	r.NormalizedName = strings.ToLower(name)
+	r.NormalizedName = strings.ToLower(extID)
 	r.Version = version
 	r.ProjectPath = profileDir
 	// Use the install mechanism rather than the browser brand, so the
