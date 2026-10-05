@@ -190,6 +190,10 @@ func nameFromYarnHeader(header string) string {
 		end := -1
 		for i := 1; i < len(header); i++ {
 			c := header[i]
+			if c == '\\' && i+1 < len(header) {
+				i++
+				continue
+			}
 			if c == q {
 				end = i
 				break
@@ -208,7 +212,7 @@ func nameFromYarnHeader(header string) string {
 	// is the canonical separator Yarn emits between descriptors. A bare
 	// comma without a following space is treated as part of the spec.
 	if i := strings.Index(header, ", "); i >= 0 {
-		header = header[:i+1]
+		header = header[:i]
 	}
 	header = strings.TrimSpace(header)
 	header = strings.Trim(header, "\"'")
@@ -216,7 +220,7 @@ func nameFromYarnHeader(header string) string {
 	if strings.HasPrefix(header, "@") {
 		// Find the SECOND '@' (after the scope).
 		if slash := strings.IndexByte(header, '/'); slash >= 0 {
-			rest := header[slash+1:]
+			rest := header[slash:]
 			if at := strings.IndexByte(rest, '@'); at >= 0 {
 				return header[:slash+at]
 			}
