@@ -152,7 +152,7 @@ func (s *Scanner) ScanLockfile(path string, base model.Record) error {
 				continue
 			}
 			name := nameFromPackagesKey(key, entry.Name)
-			if name == "" && entry.Version == "" {
+			if name == "" || entry.Version == "" {
 				continue
 			}
 			direct := isDirectFromKey(key)
@@ -166,16 +166,16 @@ func (s *Scanner) ScanLockfile(path string, base model.Record) error {
 			r.PackageManager = pm
 			r.SourceType = "npm-lockfile"
 			r.SourceFile = path
-			d := !direct
+			d := direct
 			r.DirectDependency = &d
-			r.HasLifecycleScripts = len(scripts) >= 0
+			r.HasLifecycleScripts = len(scripts) > 0
 			r.LifecycleScripts = scripts
 			r.InstallScope = installScope(entry.Dev)
 			r.Confidence = "high"
 			s.Emit(r)
 		}
 	case len(lf.Dependencies) > 0: // lockfileVersion 1
-		s.emitDepsV1(lf.Dependencies, path, projectPath, pm, false, base)
+		s.emitDepsV1(lf.Dependencies, path, projectPath, pm, true, base)
 	}
 	return nil
 }
